@@ -22,7 +22,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "config.h"
+#include "theposi.h"
 
 // ────────────────────────────────────────────
 // TAP DANCE for modify right enter/space key
@@ -30,55 +30,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 bool is_mod1_hold = false;
 
 void td_mod1_ent_finished(tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1 && !state->pressed) {
+    if (state->count == 1) {
+        if (state->pressed) {
+            layer_on(_NAVIGATION);
+            is_mod1_hold = true;
+        } else {
+        }
     } else if (state->count == 2) {
         tap_code(KC_ENT);
     }
 }
 
 void td_mod1_ent_reset(tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1 && state->pressed) {
-        layer_on(_NAVIGATION);
-        is_mod1_hold = true;
-    } else if (is_mod1_hold) {
+    if (is_mod1_hold) {
         layer_off(_NAVIGATION);
         is_mod1_hold = false;
     }
 }
 
 tap_dance_action_t tap_dance_actions[] = {
-    [TD_MOD1_ENT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_mod1_ent_finished, td_mod1_ent_reset),
+    [TD_MOD1_ENT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_mod1_ent_finished, td_mod1_ent_reset)
 };
-
-// ──────────────────────────────────────────────────
-// Combo definitions for go in|out DaVinci editing mode 
-// ──────────────────────────────────────────────────
-const uint16_t PROGMEM edit_combo_on[] = {KC_SPC, KC_F, COMBO_END};
-const uint16_t PROGMEM edit_combo_off[] = {KC_SPC, KC_K, COMBO_END};
-
-combo_t key_combos[] = {
-    [EDIT_COMBO_ON]  = COMBO(edit_combo_on),
-    [EDIT_COMBO_OFF] = COMBO(edit_combo_off),
-};
-
-uint16_t COMBO_TERM = 200;
-
-void process_combo_event(uint16_t combo_index, bool pressed) {
-    switch(combo_index) {
-        case EDIT_COMBO_ON:
-            if (pressed) {
-                layer_move(_DAVINCI);
-            }
-            break;
-
-        case EDIT_COMBO_OFF:
-            if (pressed) {
-                layer_move(_BASE);
-            }
-            break;
-    }
-}
-
 
 // ────────────────────────────────────────────
 // LAYOUT CONFIG
@@ -104,7 +76,7 @@ LT(_NUMPAD, KC_ESC),KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                   
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       KC_BRMD, KC_BRMU, XXXXXXX,  KC_F11,  KC_F12, KC_VOLD,                      KC_VOLU, KC_MPRV, KC_MPLY, KC_MNXT, XXXXXXX, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                KC_LGUI, _______,  LALT_T(KC_SPC),     KC_SPC, _______, KC_RALT
+                                KC_LGUI, DV_MODE,  LALT_T(KC_SPC),     KC_SPC, _______, KC_RALT
                                       //`--------------------------'  `--------------------------'
   ),
 
@@ -146,21 +118,45 @@ LT(_NUMPAD, KC_ESC),KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                   
 
     [_DAVINCI] = LAYOUT_split_3x6_3(
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-       MARKIN, MARKOUT,     CUT,  CDLEFT, CDRIGHT, ZOOMFIT,                       PREV_F,  NEXT_F,PRV_CLIP,NXT_CLIP,   START,     END,
+       MARKIN, MARKOUT,     CUT,  CDLEFT, CDRIGHT, ZOOMFIT,                        PRV_F,   NXT_F,PRV_CLIP,NXT_CLIP,   START,     END,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       TRIM_IN,TRIM_OUT, SWPCL_L, SWPCL_R,  INSERT,  SELECT,                      REVERSE,    STOP, FORWARD, SRC_TML,ACT_DACT,FULL_SCR,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       XXXXXXX, XXXXXXX,    MARK, RIP_DEL,  DYTRIM, TRYMODE,                      LSEL_CL, RSEL_CL, USEL_CL, DSEL_CL,    MF_R,    MF_L,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                             XXXXXXX,    UNDO,    PLAY,    TML_ZIN,    REDO, TML_ZOUT
+                                          DV_MODE,    UNDO,    PLAY,    TML_ZIN,    REDO, TML_ZOUT
                                       //`--------------------------'  `--------------------------'
   )
 };
 
-#ifdef OLED_ENABLE
+// WP
+// layer_state_t layer_state_set_user(layer_state_t state) {
+//     uint8_t layer = get_highest_layer(state);
+
+//     if (layer == _DAVINCI) {
+//         if (restored) {
+//             HSV current = rgblight_get_hsv();
+//             prev_h = current.h;
+//             prev_s = current.s;
+//             prev_v = current.v;
+//             restored = false;
+//         }
+//         rgblight_sethsv_noeeprom(0, 255, 255);
+
+//     } else {
+//         if (!restored && prev_v != 0) {
+//             rgblight_sethsv_noeeprom(prev_h, prev_s, prev_v);
+//             restored = true;
+//         }
+//     }
+    
+//     return state;
+// }
+
 // ───────────────────────────────────
 // OLED: Show actual layer in screen
 // ───────────────────────────────────
+#ifdef OLED_ENABLE
 bool oled_task_user(void) {
     oled_clear();
 
@@ -169,10 +165,6 @@ bool oled_task_user(void) {
     switch (get_highest_layer(layer_state)) {
         case _BASE:
             oled_write_ln_P(PSTR("Base"), false);
-            break;
-        case _DAVINCI:
-            oled_write_P(PSTR("🎬 DaVinci Mode\n"), false);
-            oled_write_P(PSTR("Edit tools active"), false);
             break;
         case _NAVIGATION:
             oled_write_ln_P(PSTR("Navigation"), false);
@@ -185,6 +177,9 @@ bool oled_task_user(void) {
             break;
         case _SETTINGS:
             oled_write_ln_P(PSTR("Settings"), false);
+            break;
+        case _DAVINCI:
+            oled_write_P(PSTR("DaVinci Mode"), false);
             break;
         default:
             oled_write_ln_P(PSTR("Unknown"), false);
