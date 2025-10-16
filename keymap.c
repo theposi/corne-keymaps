@@ -122,36 +122,36 @@ LT(_NUMPAD, KC_ESC),KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                   
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       TRIM_IN,TRIM_OUT, SWPCL_L, SWPCL_R,  INSERT,  SELECT,                      REVERSE,    STOP, FORWARD, SRC_TML,ACT_DACT,FULL_SCR,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      XXXXXXX, XXXXXXX,    MARK, RIP_DEL,  DYTRIM, TRYMODE,                      LSEL_CL, RSEL_CL, USEL_CL, DSEL_CL,    MF_R,    MF_L,
+          JOG,    SCRL,    MARK, RIP_DEL,  DYTRIM, TRYMODE,                      LSEL_CL, RSEL_CL, USEL_CL, DSEL_CL,    MF_R,    MF_L,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           DV_MODE,    UNDO,    PLAY,    TML_ZIN,    REDO, TML_ZOUT
                                       //`--------------------------'  `--------------------------'
   )
 };
 
-// WP
-// layer_state_t layer_state_set_user(layer_state_t state) {
-//     uint8_t layer = get_highest_layer(state);
+layer_state_t layer_state_set_user(layer_state_t state) {
+    uint8_t layer = get_highest_layer(state);
 
-//     if (layer == _DAVINCI) {
-//         if (restored) {
-//             HSV current = rgblight_get_hsv();
-//             prev_h = current.h;
-//             prev_s = current.s;
-//             prev_v = current.v;
-//             restored = false;
-//         }
-//         rgblight_sethsv_noeeprom(0, 255, 255);
+    if (layer == _DAVINCI) {
+        if (!color_saved) {
+            HSV current = rgblight_get_hsv();
+            prev_h = current.h;
+            prev_s = current.s;
+            prev_v = current.v;
+            color_saved = true;
+        }
 
-//     } else {
-//         if (!restored && prev_v != 0) {
-//             rgblight_sethsv_noeeprom(prev_h, prev_s, prev_v);
-//             restored = true;
-//         }
-//     }
-    
-//     return state;
-// }
+        rgblight_sethsv_noeeprom(0, 255, 255);
+
+    } else {
+        if (color_saved) {
+            rgblight_sethsv_noeeprom(prev_h, prev_s, prev_v);
+            color_saved = false;
+        }
+    }
+
+    return state;
+}
 
 // ───────────────────────────────────
 // OLED: Show actual layer in screen

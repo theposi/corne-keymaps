@@ -6,7 +6,7 @@
 static uint16_t prev_h = 0;
 static uint8_t  prev_s = 0;
 static uint8_t  prev_v = 0;
-static bool     restored = true;
+static bool color_saved = false;
 
 // LAYERS NAMES
 enum layer_names {
@@ -38,7 +38,7 @@ enum {
 #define CUT             LCTL(KC_B)
 #define CDLEFT          LCTL(LSFT(KC_LBRC))
 #define CDRIGHT         LCTL(LSFT(KC_RBRC))
-#define ZOOMFIT         LSFT(KC_Z) 
+#define ZOOMFIT         LSFT(KC_Z)
 #define TRIM_IN         LSFT(KC_LBRC)
 #define TRIM_OUT        LSFT(KC_RBRC)
 #define SWPCL_L         LCTL(LSFT(KC_COMMA))
@@ -52,8 +52,8 @@ enum {
 #define PLAY            KC_SPACE
 #define UNDO            LCTL(KC_Z)
 
-// RIGHT 
-#define PRV_F           KC_LEFT 
+// RIGHT
+#define PRV_F           KC_LEFT
 #define NXT_F           KC_RIGHT
 #define PRV_CLIP        KC_UP
 #define NXT_CLIP        KC_DOWN
@@ -74,3 +74,7 @@ enum {
 #define REDO            LCTL(LSFT(KC_Z))
 #define TML_ZIN         LCTL(KC_EQL)
 #define TML_ZOUT        LCTL(KC_MINUS)
+
+// JOG WHEEL
+#define JOG             KC_F1
+#define SCRL            KC_F3
