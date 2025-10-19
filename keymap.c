@@ -23,6 +23,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "theposi.h"
+#include <stdint.h>
 
 // ────────────────────────────────────────────
 // TAP DANCE for modify right enter/space key
@@ -129,6 +130,9 @@ LT(_NUMPAD, KC_ESC),KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                   
   )
 };
 
+// ───────────────────────────────────
+// RGB per modes and layers
+// ───────────────────────────────────
 layer_state_t layer_state_set_user(layer_state_t state) {
     uint8_t layer = get_highest_layer(state);
 
@@ -141,7 +145,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
             color_saved = true;
         }
 
-        rgblight_sethsv_noeeprom(0, 255, 255);
+        rgblight_sethsv_noeeprom(DAVINCI_COLOR);
 
     } else {
         if (color_saved) {
@@ -153,8 +157,55 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return state;
 }
 
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case JOG:
+            if (record->event.pressed) {
+                if (is_mode_active == JOG_MODE) {
+                    is_mode_active = NONE;
+                } else {
+                    is_mode_active = JOG_MODE;
+                }
+        }
+        break;
+
+        case SCRL:
+            if (record->event.pressed) {
+                if (is_mode_active == SCRL_MODE) {
+                    is_mode_active = NONE;
+                } else {
+                    is_mode_active = SCRL_MODE;
+                }
+        }
+        break;
+    }
+    return true;
+}
+
+bool rgb_matrix_indicators_user(void) {
+    if (get_highest_layer(layer_state) != _DAVINCI) {
+        return false;
+    }
+
+    switch (is_mode_active) {
+        case JOG_MODE:
+            rgb_matrix_set_color(JOG_INDX, (JOG_COLOR));
+            rgb_matrix_set_color(SCRL_INDX, (DAVINCI_COLOR));
+            break;
+        case SCRL_MODE:
+            rgb_matrix_set_color(SCRL_INDX, (SCRL_COLOR));
+            rgb_matrix_set_color(JOG_INDX, (DAVINCI_COLOR));
+            break;
+        case NONE:
+            rgb_matrix_set_color(JOG_INDX, (DAVINCI_COLOR));
+            rgb_matrix_set_color(SCRL_INDX, (DAVINCI_COLOR));
+            break;
+    }
+    return false;
+}
+
 // ───────────────────────────────────
-// OLED: Show actual layer in screen
+// OLED Show actual layer in screen
 // ───────────────────────────────────
 #ifdef OLED_ENABLE
 bool oled_task_user(void) {

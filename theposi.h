@@ -2,13 +2,12 @@
 #include QMK_KEYBOARD_H
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+#include "quantum.h"
 
-static uint16_t prev_h = 0;
-static uint8_t  prev_s = 0;
-static uint8_t  prev_v = 0;
-static bool color_saved = false;
-
+// ────────────────────────────────────────────
 // LAYERS NAMES
+// ────────────────────────────────────────────
 enum layer_names {
     _BASE = 0,
     _NAVIGATION,
@@ -18,7 +17,9 @@ enum layer_names {
     _DAVINCI,
 };
 
+// ────────────────────────────────────────────
 // TAP DANCE DEFS
+// ────────────────────────────────────────────
 enum {
     TD_MOD1_ENT,
 };
@@ -29,9 +30,31 @@ enum {
 #define DV_MODE TG(_DAVINCI)
 
 // ────────────────────────────────────────────
+// DAVINCI MODES
+// ────────────────────────────────────────────
+static uint8_t  prev_h = 0;
+static uint8_t  prev_s = 0;
+static uint8_t  prev_v = 0;
+static bool color_saved = false;
+
+#define DAVINCI_COLOR 0,255,255
+#define JOG_COLOR 215,150,150
+#define SCRL_COLOR 215,150,150
+
+#define JOG_INDX 24
+#define SCRL_INDX 25
+
+enum jog_modes {
+    NONE = 0,
+    JOG_MODE,
+    SCRL_MODE,
+};
+
+static uint8_t is_mode_active = NONE;
+
+// ────────────────────────────────────────────
 // DAVINCI MACROS
 // ────────────────────────────────────────────
-
 // LEFT
 #define MARKIN          KC_I
 #define MARKOUT         KC_O
